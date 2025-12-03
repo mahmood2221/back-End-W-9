@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Hello</title>
-</head>
-<body>
-    <h1>Hello, World!</h1>
-    <h2>Hello, {{ $name }}</h2>
-</body>
-</html>
+@extends('layouts.app')
+
+@section('title', 'Home')
+
+@section('content')
+    <h2>{{ $title }}</h2>
+@endsection
