@@ -23,10 +23,10 @@ class HomeController extends Controller
         // مصفوفة مفهرسة (indexed array) من ميزات Laravel
         $features = [
             'Routing بسيط ومرن',
-            'Eloquent ORM لإدارة قواعد البيانات',
             'Blade template engine خفيف وسهل',
             'Middleware لحماية الصفحات',
-            'Commands وTasks باستخدام Artisan'
+            'Commands وTasks باستخدام Artisan',
+            'Eloquent ORM لإدارة قواعد البيانات'
         ];
 
         return view('features', compact('features'));
