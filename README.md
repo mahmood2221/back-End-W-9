@@ -1,126 +1,156 @@
-# Laravel Basic Database Operations – Products Example
+`https://github.com/mahmood2221/back-End-W-3`
 
-هذا المشروع يوضح كيفية إنشاء نموذج (Model) وهجرة (Migration) وSeeder في Laravel لإدارة المنتجات داخل قاعدة البيانات.
+# Laravel Basic Database Operations – Product CRUD
+
+## 📌 Task03(2): Product CRUD Operations in Laravel
+
+This project demonstrates **basic database operations (CRUD)** in Laravel using a **Product** model. It includes migrations, seeders, controllers, routes, and views to manage products.
 
 ---
 
+## 🚀 Requirements
+
+* PHP 8.1+
+* Composer
+* Laravel 10+
+* MySQL (or any supported database)
+* Git
+
 ---
 
-## **📌 Features**
+## ⚙️ Installation & Setup
 
-* Product Model
-* Migration with schema
-* ProductSeeder with dummy data
-* Database populated via seeders
-* Example Tinker commands
+### 1️⃣ Clone the repository
 
-### 2. تثبيت الاعتمادات
+```bash
+git clone https://github.com/mahmood2221/back-End-W-3.git
+cd myproject
+```
 
-## **📁 Products Table Structure**
-
-| Column     | Type         |
-| ---------- | ------------ |
-| id         | integer (PK) |
-| name       | string       |
-| price      | decimal      |
-| created_at | timestamp    |
-| updated_at | timestamp    |
+### 2️⃣ Install dependencies
 
 ```bash
 composer install
 ```
 
-### cp .env.example .env
+### 3️⃣ Environment configuration
 
-## **🛠 Steps to Run the Project**
+Copy the environment file:
 
-### **1. Install Dependencies**
+```bash
+cp .env.example .env
+```
 
-<pre class="overflow-visible!" data-start="1231" data-end="1259"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>composer install</span></span></code></div></div></pre>
+Update database credentials in `.env`:
 
-### **2. Configure Environment**
-
-Copy `.env.example`:
-
-<pre class="overflow-visible!" data-start="1321" data-end="1345"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>cp</span><span> .</span><span>env</span><span> .</span><span>env</span></span></code></div></div></pre>
-
-Generate the app key:
-
-<pre class="overflow-visible!" data-start="1370" data-end="1406"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>php artisan key:generate
-</span></span></code></div></div></pre>
-
-Update your database credentials inside `.env`:
-
-DB_DATABASE=your_database
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel_db
 DB_USERNAME=root
 DB_PASSWORD=
+```
 
-### **3. Run Migrations**
+### 4️⃣ Generate application key
 
-<pre class="overflow-visible!" data-start="1553" data-end="1584"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>php artisan migrate</span></span></code></div></div></pre>
+```bash
+php artisan key:generate
+```
 
-<pre class="overflow-visible!" data-start="1457" data-end="1520"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"></div></div></pre>
+---
 
-### **4. Run Seeder**
+## 🛠️ Database Setup
 
-<pre class="overflow-visible!" data-start="1613" data-end="1666"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>php artisan db:seed --class=ProductSeeder
-</span></span></code></div></div></pre>
+### Run migrations
 
-### **5. Verify Data**
+```bash
+php artisan migrate
+```
 
-Using Tinker:
+### Seed the database (insert dummy products)
 
-<pre class="overflow-visible!" data-start="1711" data-end="1772"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>php artisan tinker
->>> App\Models\Product::all();
-</span></span></code></div></div></pre>
+```bash
+php artisan db:seed --class=ProductSeeder
+```
 
-Or check the database directly.
+> This will insert **at least 5 dummy products** into the `products` table.
 
+---
 
-# ✅ **5. تشغيل المشروع**
+## ▶️ Run the Application
 
-### 1️⃣ شغّل السيرفر:
+```bash
+php artisan serve
+```
 
-<pre class="overflow-visible!" data-start="5228" data-end="5253"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre!"><span><span>php</span><span> artisan serve
-</span></span></code></div></div></pre>
+Open your browser:
 
-### 2️⃣ افتح الصفحة:
+```
+http://127.0.0.1:8000
+```
 
-<pre class="overflow-visible!" data-start="5276" data-end="5314"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre!"><span><span>http://localhost:8000/products
-</span></span></code></div></div></pre>
+The  **products list will appear on the home page** .
 
-ستظهر:
+---
 
-✔ عرض المنتجات
+## 🔗 Available Routes
 
-✔ إضافة منتج
+| Method | URL                     | Description          |
+| ------ | ----------------------- | -------------------- |
+| GET    | `/`                   | Display all products |
+| GET    | `/products`           | Display all products |
+| GET    | `/products/create`    | Add new product      |
+| POST   | `/products`           | Store product        |
+| GET    | `/products/{id}/edit` | Edit product         |
+| PUT    | `/products/{id}`      | Update product       |
+| DELETE | `/products/{id}`      | Delete product       |
 
-✔ تعديل منتج
+---
 
-✔ حذف منتج
+## 🧪 Verify Using Tinker
 
-## **📌 Notes**
+```bash
+php artisan tinker
+```
 
-### ✔ Mass Assignment
+```php
+App\\Models\\Product::all();
+```
 
-The Product model includes:
+---
 
-<pre class="overflow-visible!" data-start="1880" data-end="1931"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-php"><span><span>protected</span><span></span><span>$fillable</span><span> = [</span><span>'name'</span><span>, </span><span>'price'</span><span>];</span></span></code></div></div></pre>
+## 📂 Project Structure (Important Files)
 
-### ✔ Seeder Workflow
+* `app/Models/Product.php`
+* `database/migrations/create_products_table.php`
+* `database/seeders/ProductSeeder.php`
+* `app/Http/Controllers/ProductController.php`
+* `routes/web.php`
+* `resources/views/products/`
 
-Migrations → Seeders
+---
 
-Always migrate before seeding.
+## 🔐 Notes
 
-### ✔ Tinker Testing
+* `$fillable` is used in the `Product` model for  **Mass Assignment protection** .
+* Always run  **migrations before seeders** .
+* CRUD operations are implemented using `Route::resource`.
 
-Useful to verify records after seeding.
+---
 
-## **📎 Repository Link**
+## ✅ Expected Outcome
 
-(ضع هنا رابط GitHub الخاص بك)
+* Products table created with fields: `id`, `name`, `price`, `created_at`, `updated_at`
+* Five dummy products inserted
+* Fully functional CRUD operations (Create, Read, Update, Delete)
 
-Example:
+---
 
-`https://github.com/mahmood2221/back-End-W-3`
+## 👤 Author
+
+**Mahmood**
+
+---
+
+✅ This project is ready for academic submission and evaluation.
