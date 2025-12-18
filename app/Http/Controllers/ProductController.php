@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 
 class ProductController extends Controller
 {
@@ -14,50 +15,38 @@ class ProductController extends Controller
         return view('products.index', compact('products'));
     }
 
-    // CREATE: فورم إضافة منتج
+    // CREATE: عرض فورم الإضافة
     public function create()
     {
         return view('products.create');
     }
 
-    // STORE: حفظ المنتج في قاعدة البيانات
-    public function store(Request $request)
+    // STORE: حفظ المنتج باستخدام StoreProductRequest
+    public function store(StoreProductRequest $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'price' => 'required|numeric'
-        ]);
-
-        Product::create($request->only('name', 'price'));
+        Product::create($request->validated());
 
         return redirect()->route('products.index')->with('success', 'Product added successfully!');
     }
 
     // EDIT: عرض فورم التعديل
-    public function edit($id)
+    public function edit(Product $product)
     {
-        $product = Product::findOrFail($id);
         return view('products.edit', compact('product'));
     }
 
-    // UPDATE: تحديث بيانات المنتج
-    public function update(Request $request, $id)
+    // UPDATE: تعديل المنتج باستخدام UpdateProductRequest
+    public function update(UpdateProductRequest $request, Product $product)
     {
-        $request->validate([
-            'name' => 'required',
-            'price' => 'required|numeric'
-        ]);
-
-        $product = Product::findOrFail($id);
-        $product->update($request->only('name', 'price'));
+        $product->update($request->validated());
 
         return redirect()->route('products.index')->with('success', 'Product updated successfully!');
     }
 
     // DELETE: حذف المنتج
-    public function destroy($id)
+    public function destroy(Product $product)
     {
-        Product::destroy($id);
+        $product->delete();
 
         return redirect()->route('products.index')->with('success', 'Product deleted successfully!');
     }

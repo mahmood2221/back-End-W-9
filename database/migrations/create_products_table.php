@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id(); // معرف المنتج (Primary Key)
-            $table->string('name'); // اسم المنتج
+            $table->string('name')->unique(); // اسم المنتج
             $table->decimal('price', 8, 2); // سعر المنتج بدقة عشريّة
             $table->timestamps(); // created_at و updated_at تلقائي
         });

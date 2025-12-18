@@ -1,156 +1,119 @@
-`https://github.com/mahmood2221/back-End-W-3`
 
-# Laravel Basic Database Operations – Product CRUD
+# Laravel Product CRUD – Task 04
 
-## 📌 Task03(2): Product CRUD Operations in Laravel
+## 📌 Project Overview
 
-This project demonstrates **basic database operations (CRUD)** in Laravel using a **Product** model. It includes migrations, seeders, controllers, routes, and views to manage products.
+This project is a **Laravel Product CRUD application** that demonstrates  **basic database operations** ,  **form validation** , and **database integrity enforcement** following clean code standards.
+
+The project was developed as part of  **Task 04: Product Validation & Data Integrity in Laravel** .
 
 ---
 
-## 🚀 Requirements
+## 🚀 Features
 
-* PHP 8.1+
-* Composer
+* Create, Read, Update, Delete (CRUD) Products
+* Server-side validation using **Laravel Form Requests**
+* Database integrity using **migration constraints**
+* Clear validation error messages in views
+* Preserves old input values on validation failure
+
+---
+
+## 🛠️ Technologies Used
+
+* PHP 8+
 * Laravel 10+
-* MySQL (or any supported database)
-* Git
+* MySQL
+* Blade Templates
+* Git & GitHub
+
+---
+
+## 📂 Validation Rules
+
+### Store Product
+
+* `name` → required, unique
+* `price` → required, numeric, greater than 0
+
+### Update Product
+
+* Same validation rules
+* Unique name ignores current product ID
+
+---
+
+## 🗄️ Database Structure
+
+```sql
+products
+- id (primary key)
+- name (string, unique)
+- price (decimal 8,2)
+- timestamps
+```
 
 ---
 
 ## ⚙️ Installation & Setup
 
-### 1️⃣ Clone the repository
-
 ```bash
 git clone https://github.com/mahmood2221/back-End-W-3.git
 cd myproject
-```
-
-### 2️⃣ Install dependencies
-
-```bash
 composer install
-```
-
-### 3️⃣ Environment configuration
-
-Copy the environment file:
-
-```bash
 cp .env.example .env
-```
-
-Update database credentials in `.env`:
-
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=laravel_db
-DB_USERNAME=root
-DB_PASSWORD=
-```
-
-### 4️⃣ Generate application key
-
-```bash
 php artisan key:generate
 ```
 
----
+### Configure Database
 
-## 🛠️ Database Setup
+Update `.env` with your database credentials.
 
-### Run migrations
-
-```bash
-php artisan migrate
-```
-
-### Seed the database (insert dummy products)
+### Run Migrations & Seeders
 
 ```bash
-php artisan db:seed --class=ProductSeeder
+php artisan migrate:fresh --seed
 ```
 
-> This will insert **at least 5 dummy products** into the `products` table.
-
----
-
-## ▶️ Run the Application
+### Run the Project
 
 ```bash
 php artisan serve
 ```
 
-Open your browser:
+Open:
 
 ```
-http://127.0.0.1:8000
-```
-
-The  **products list will appear on the home page** .
-
----
-
-## 🔗 Available Routes
-
-| Method | URL                     | Description          |
-| ------ | ----------------------- | -------------------- |
-| GET    | `/`                   | Display all products |
-| GET    | `/products`           | Display all products |
-| GET    | `/products/create`    | Add new product      |
-| POST   | `/products`           | Store product        |
-| GET    | `/products/{id}/edit` | Edit product         |
-| PUT    | `/products/{id}`      | Update product       |
-| DELETE | `/products/{id}`      | Delete product       |
-
----
-
-## 🧪 Verify Using Tinker
-
-```bash
-php artisan tinker
-```
-
-```php
-App\\Models\\Product::all();
+http://127.0.0.1:8000/products
 ```
 
 ---
 
-## 📂 Project Structure (Important Files)
+## ✅ Validation Testing Checklist
 
-* `app/Models/Product.php`
-* `database/migrations/create_products_table.php`
-* `database/seeders/ProductSeeder.php`
-* `app/Http/Controllers/ProductController.php`
-* `routes/web.php`
-* `resources/views/products/`
-
----
-
-## 🔐 Notes
-
-* `$fillable` is used in the `Product` model for  **Mass Assignment protection** .
-* Always run  **migrations before seeders** .
-* CRUD operations are implemented using `Route::resource`.
+* Empty name → ❌ validation fails
+* Duplicate name → ❌ validation fails
+* Price ≤ 0 → ❌ validation fails
+* Update without changing name → ✅ passes
+* Update with duplicate name → ❌ fails
 
 ---
 
-## ✅ Expected Outcome
+## 📸 Screens
 
-* Products table created with fields: `id`, `name`, `price`, `created_at`, `updated_at`
-* Five dummy products inserted
-* Fully functional CRUD operations (Create, Read, Update, Delete)
+Validation errors appear:
 
----
-
-## 👤 Author
-
-**Mahmood**
+* Under each input field
+* As a summary list at the top of the form
 
 ---
 
-✅ This project is ready for academic submission and evaluation.
+## 👨‍💻 Author
+
+Mahmood
+
+---
+
+## 🏁 Final Notes
+
+This project follows **Laravel best practices** and is ready for production-level validation handling.
