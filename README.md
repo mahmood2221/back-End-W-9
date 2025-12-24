@@ -1,119 +1,148 @@
 
-# Laravel Product CRUD – Task 04
+# Task 05: Eloquent Relationships & Category Association (Laravel)
 
-## 📌 Project Overview
+## Objective
 
-This project is a **Laravel Product CRUD application** that demonstrates  **basic database operations** ,  **form validation** , and **database integrity enforcement** following clean code standards.
-
-The project was developed as part of  **Task 04: Product Validation & Data Integrity in Laravel** .
-
----
-
-## 🚀 Features
-
-* Create, Read, Update, Delete (CRUD) Products
-* Server-side validation using **Laravel Form Requests**
-* Database integrity using **migration constraints**
-* Clear validation error messages in views
-* Preserves old input values on validation failure
+Enhance the Product Management System by introducing a relational database structure.
+This task demonstrates how to implement **One-to-Many Eloquent Relationships** in Laravel
+between **Categories** and **Products**, with proper validation, migrations, and seeders.
 
 ---
 
-## 🛠️ Technologies Used
+## Technologies Used
 
-* PHP 8+
-* Laravel 10+
-* MySQL
-* Blade Templates
-* Git & GitHub
-
----
-
-## 📂 Validation Rules
-
-### Store Product
-
-* `name` → required, unique
-* `price` → required, numeric, greater than 0
-
-### Update Product
-
-* Same validation rules
-* Unique name ignores current product ID
+- PHP 8.x
+- Laravel 10.x
+- MySQL
+- Blade Templates
+- Eloquent ORM
 
 ---
 
-## 🗄️ Database Structure
+## Features Implemented
 
-```sql
-products
-- id (primary key)
-- name (string, unique)
-- price (decimal 8,2)
-- timestamps
-```
+### Category Module
+
+- Category Model & Migration
+- `categories` table with:
+  - `id`
+  - `name` (unique)
+  - timestamps
+- CategorySeeder inserts **5 categories**:
+  - Electronics
+  - Fashion
+  - Home
+  - Books
+  - Sports
 
 ---
 
-## ⚙️ Installation & Setup
+### Product Module Enhancements
 
-```bash
-git clone https://github.com/mahmood2221/back-End-W-3.git
-cd myproject
+- Added `category_id` column to `products` table
+- Foreign key constraint:
+  - References `categories.id`
+  - `onDelete('cascade')`
+- Each product belongs to one category
+
+---
+
+### Eloquent Relationships
+
+**Product Model**
+
+public function category()
+{
+    return $this->belongsTo(Category::class);
+}
+Category Model
+
+
+public function products()
+{
+    return $this->hasMany(Product::class);
+}
+ CRUD Updates
+Create & Edit forms include a Category dropdown
+
+Category is required when creating/updating a product
+
+Category name is displayed in the Products list table
+
+ Form Validation
+Validation is handled using Laravel Form Requests:
+
+StoreProductRequest & UpdateProductRequest
+name: required, unique
+
+price: required, numeric, greater than 0
+
+category_id: required, must exist in categories table
+
+ Query Optimization
+Used Eager Loading to avoid N+1 problem:
+
+Product::with('category')->get();
+
+
+ Database Structure
+categories table
+Column	Type
+id	bigint
+name	string (unique)
+created_at	timestamp
+updated_at	timestamp
+
+products table
+Column	Type
+id	bigint
+name	string
+price	decimal(8,2)
+category_id	foreign key
+created_at	timestamp
+updated_at	timestamp
+
+ How to Run the Project
+ Install dependencies
+
 composer install
-cp .env.example .env
+ Configure environment
+Copy .env.example to .env
+
+Update database credentials
+
+Generate app key
+
 php artisan key:generate
-```
 
-### Configure Database
-
-Update `.env` with your database credentials.
-
-### Run Migrations & Seeders
-
-```bash
+Run migrations & seeders
 php artisan migrate:fresh --seed
-```
 
-### Run the Project
+ Start the server
 
-```bash
 php artisan serve
-```
 
 Open:
 
-```
 http://127.0.0.1:8000/products
-```
 
----
 
-## ✅ Validation Testing Checklist
+ Expected Outcome
+Categories and Products are linked via One-to-Many relationship
 
-* Empty name → ❌ validation fails
-* Duplicate name → ❌ validation fails
-* Price ≤ 0 → ❌ validation fails
-* Update without changing name → ✅ passes
-* Update with duplicate name → ❌ fails
+Products always belong to a valid category
 
----
+CRUD operations work correctly
 
-## 📸 Screens
+Clean UI with category display
 
-Validation errors appear:
+Optimized queries using Eager Loading
 
-* Under each input field
-* As a summary list at the top of the form
+ Notes
+This task focuses on data integrity, clean architecture, and Laravel best practices
 
----
+Suitable for learning Eloquent Relationships and real-world CRUD design
 
-## 👨‍💻 Author
-
-Mahmood
-
----
-
-## 🏁 Final Notes
-
-This project follows **Laravel best practices** and is ready for production-level validation handling.
+👤 Author
+MAHMOOD MADY
+Laravel Training – Task 05

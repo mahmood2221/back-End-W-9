@@ -15,13 +15,14 @@ class UpdateProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'  => [
+            'name' => [
                 'required',
                 'string',
                 'max:255',
                 Rule::unique('products', 'name')->ignore($this->product),
             ],
-            'price' => 'required|numeric|min:0.01',
+            'price'       => 'required|numeric|min:0.01',
+            'category_id' => 'required|exists:categories,id',
         ];
     }
 }

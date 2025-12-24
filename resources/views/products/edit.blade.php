@@ -1,42 +1,69 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Edit Product</title>
+
     <style>
         body {
-            font-family: Arial;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            padding: 40px;
         }
+
         .container {
-            width: 400px;
-            margin: 40px auto;
-            padding: 20px;
-            border: 1px solid #ddd;
+            max-width: 450px;
+            margin: auto;
+            background: white;
+            padding: 25px;
             border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,.1);
         }
+
+        h1 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
         label {
             font-weight: bold;
+            display: block;
+            margin-top: 15px;
         }
-        input {
+
+        input, select {
             width: 100%;
             padding: 8px;
-            margin-top: 5px;
+            margin-top: 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
         }
+
         .error {
             color: red;
             font-size: 14px;
-            margin-top: 5px;
+            margin-top: 4px;
         }
+
         button {
+            margin-top: 20px;
+            width: 100%;
             background: #2563eb;
             color: white;
             border: none;
-            padding: 8px 15px;
+            padding: 10px;
             border-radius: 4px;
             cursor: pointer;
         }
+
+        button:hover {
+            background: #1e40af;
+        }
+
         a {
-            display: inline-block;
+            display: block;
             margin-top: 15px;
+            text-align: center;
             color: #2563eb;
             text-decoration: none;
         }
@@ -54,22 +81,25 @@
         <label>Name</label>
         <input type="text" name="name"
                value="{{ old('name', $product->name) }}">
-        @error('name')
-            <div class="error">{{ $message }}</div>
-        @enderror
-
-        <br>
+        @error('name') <div class="error">{{ $message }}</div> @enderror
 
         <label>Price</label>
-        <input type="number" name="price" step="0.01"
+        <input type="number" step="0.01" name="price"
                value="{{ old('price', $product->price) }}">
-        @error('price')
-            <div class="error">{{ $message }}</div>
-        @enderror
+        @error('price') <div class="error">{{ $message }}</div> @enderror
 
-        <br><br>
+        <label>Category</label>
+        <select name="category_id">
+            @foreach($categories as $category)
+                <option value="{{ $category->id }}"
+                    {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
+                    {{ $category->name }}
+                </option>
+            @endforeach
+        </select>
+        @error('category_id') <div class="error">{{ $message }}</div> @enderror
 
-        <button type="submit">Update</button>
+        <button type="submit">Update Product</button>
     </form>
 
     <a href="{{ route('products.index') }}">← Back to Products</a>
