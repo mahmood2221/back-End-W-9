@@ -12,14 +12,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1️ تعبئة جدول الفئات أولًا
-        $this->call([
-            CategorySeeder::class,
-        ]);
+      
 
         // 2️ تعبئة جدول المنتجات بعد الفئات
         $this->call([
+            CategorySeeder::class,
             ProductSeeder::class,
+            SupplierSeeder::class,
+            ProductSupplierSeeder::class,
+
         ]);
 
         // 3️ إنشاء مستخدم تجريبي

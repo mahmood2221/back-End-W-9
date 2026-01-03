@@ -97,6 +97,41 @@
         </select>
         @error('category_id') <div class="error">{{ $message }}</div> @enderror
 
+        <hr style="margin:20px 0">
+
+<h3>Suppliers</h3>
+
+@foreach($suppliers as $supplier)
+    <div style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+        <label>
+            <input type="checkbox"
+                   name="suppliers[{{ $supplier->id }}][selected]"
+                   value="1"
+                   {{ old("suppliers.$supplier->id.selected") ? 'checked' : '' }}>
+            {{ $supplier->name }}
+        </label>
+
+        <input type="number" step="0.01"
+               name="suppliers[{{ $supplier->id }}][cost_price]"
+               placeholder="Cost Price"
+               value="{{ old("suppliers.$supplier->id.cost_price") }}">
+
+        <input type="number"
+               name="suppliers[{{ $supplier->id }}][lead_time_days]"
+               placeholder="Lead Time (days)"
+               value="{{ old("suppliers.$supplier->id.lead_time_days") }}">
+
+        @error("suppliers.$supplier->id.cost_price")
+            <div class="error">{{ $message }}</div>
+        @enderror
+
+        @error("suppliers.$supplier->id.lead_time_days")
+            <div class="error">{{ $message }}</div>
+        @enderror
+    </div>
+@endforeach
+
+
         <button type="submit">Save Product</button>
     </form>
 

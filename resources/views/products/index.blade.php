@@ -106,7 +106,11 @@
             <th>Name</th>
             <th>Price ($)</th>
             <th>Category</th>
+            <th>Suppliers</th>
+            <th>Suppliers Count</th>
             <th>Actions</th>
+
+
         </tr>
         </thead>
 
@@ -126,6 +130,20 @@
                         <button onclick="return confirm('Delete this product?')">Delete</button>
                     </form>
                 </td>
+                       
+                <td>
+                  @foreach($product->suppliers as $supplier)
+                     {{ $supplier->name }}
+                     (cost: {{ $supplier->pivot->cost_price }},
+                     lead: {{ $supplier->pivot->lead_time_days }} days)
+                      <br>
+                                
+
+                      @endforeach
+                         </td>
+                <td>{{ $product->suppliers_count }}</td>
+
+
             </tr>
         @endforeach
         </tbody>

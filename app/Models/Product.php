@@ -16,4 +16,15 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
+
+    // علاقة المنتج بالموردين
+    public function suppliers()
+    {
+        return $this->belongsToMany(Supplier::class)
+            ->withPivot(['cost_price', 'lead_time_days'])
+            ->withTimestamps();
+
+
 }
+
+}       
