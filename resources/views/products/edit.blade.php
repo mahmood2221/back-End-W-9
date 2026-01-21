@@ -74,34 +74,59 @@
 <div class="container">
     <h1>Edit Product</h1>
 
-    <form action="{{ route('products.update', $product->id) }}" method="POST">
-        @csrf
-        @method('PUT')
+   <form action="{{ route('products.update', $product->id) }}" method="POST">
+    @csrf
+    @method('PUT')
 
-        <label>Name</label>
-        <input type="text" name="name"
-               value="{{ old('name', $product->name) }}">
-        @error('name') <div class="error">{{ $message }}</div> @enderror
+    <label>Name</label>
+    <input type="text" name="name" value="{{ old('name', $product->name) }}">
+    @error('name') <div class="error">{{ $message }}</div> @enderror
 
-        <label>Price</label>
-        <input type="number" step="0.01" name="price"
-               value="{{ old('price', $product->price) }}">
-        @error('price') <div class="error">{{ $message }}</div> @enderror
+    <label>Price</label>
+    <input type="number" step="0.01" name="price" value="{{ old('price', $product->price) }}">
+    @error('price') <div class="error">{{ $message }}</div> @enderror
 
-        <label>Category</label>
-        <select name="category_id">
-            @foreach($categories as $category)
-                <option value="{{ $category->id }}"
-                    {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
-                    {{ $category->name }}
-                </option>
-            @endforeach
-        </select>
-        @error('category_id') <div class="error">{{ $message }}</div> @enderror
+    <label>Category</label>
+    <select name="category_id">
+        @foreach($categories as $category)
+            <option value="{{ $category->id }}" {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
+                {{ $category->name }}
+            </option>
+        @endforeach
+    </select>
 
-        <button type="submit">Update Product</button>
-    </form>
+    <hr style="margin:20px 0">
+    <h3>Suppliers</h3>
 
+    @foreach($suppliers as $supplier)
+        @php
+            // جلب البيانات من جدول الوسيط (Pivot) لهذا المورد تحديداً
+            $pivotData = $product->suppliers->find($supplier->id);
+            
+            $isSelected = old("suppliers.{$supplier->id}.selected", $pivotData ? '1' : '');
+            $costPrice = old("suppliers.{$supplier->id}.cost_price", $pivotData->pivot->cost_price ?? '');
+            $leadTime = old("suppliers.{$supplier->id}.lead_time_days", $pivotData->pivot->lead_time_days ?? '');
+        @endphp
+
+        <div style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+            <label style="display:inline; font-weight:normal;">
+                <input type="checkbox" name="suppliers[{{ $supplier->id }}][selected]" value="1" {{ $isSelected ? 'checked' : '' }}>
+                {{ $supplier->name }}
+            </label>
+
+            <input type="number" step="0.01" name="suppliers[{{ $supplier->id }}][cost_price]" 
+                   value="{{ $costPrice }}" placeholder="Cost Price" style="width: 100px; display:inline; margin-left:10px;">
+
+            <input type="number" name="suppliers[{{ $supplier->id }}][lead_time_days]" 
+                   value="{{ $leadTime }}" placeholder="Lead Time" style="width: 100px; display:inline; margin-left:10px;">
+
+            @error("suppliers.$supplier->id.cost_price") <div class="error">{{ $message }}</div> @enderror
+            @error("suppliers.$supplier->id.lead_time_days") <div class="error">{{ $message }}</div> @enderror
+        </div>
+    @endforeach
+
+    <button type="submit">Update Product</button>
+</form>
     <a href="{{ route('products.index') }}">← Back to Products</a>
 </div>
 

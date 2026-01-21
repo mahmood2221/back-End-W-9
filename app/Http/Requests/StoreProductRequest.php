@@ -11,22 +11,18 @@ class StoreProductRequest extends FormRequest
         return true; // السماح بتنفيذ الطلب
     }
 
-    public function rules(): array
+   public function rules(): array
 {
     return [
-        'name' => 'required|string|max:255|unique:products,name',
+        'name' => 'required|string|max:255',
         'price' => 'required|numeric|min:0.01',
         'category_id' => 'required|exists:categories,id',
+        'suppliers' => 'required|array', // التأكد من إرسال المصفوفة
 
-        'suppliers' => 'required|array',
-
-        'suppliers.*.selected' => 'nullable',
-
-        'suppliers.*.cost_price' =>
-            'required_with:suppliers.*.selected|numeric|min:0',
-
-        'suppliers.*.lead_time_days' =>
-            'required_with:suppliers.*.selected|integer|min:0',
+        // التعديل السحري هنا:
+        // مطلوب فقط إذا كان الـ checkbox (selected) قيمته 1، وغير ذلك هو nullable
+        'suppliers.*.cost_price' => 'required_if:suppliers.*.selected,1|nullable|numeric|min:0',
+        'suppliers.*.lead_time_days' => 'required_if:suppliers.*.selected,1|nullable|integer|min:0',
     ];
 }
 }

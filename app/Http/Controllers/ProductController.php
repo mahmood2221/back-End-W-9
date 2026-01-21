@@ -26,6 +26,7 @@ class ProductController extends Controller
         return view('products.create', [
             'categories' => Category::all(),
             'suppliers'  => Supplier::all(),
+            
         ]);
     }
 
@@ -71,27 +72,25 @@ class ProductController extends Controller
 {
     $product->update($request->validated());
 
-    if ($request->has('suppliers')) {
-
     $data = [];
-
-    
+    // نتحقق من وجود المصفوفة، وإذا لم توجد نرسل مصفوفة فارغة لـ sync لمسح الموردين القدامى
+    if ($request->has('suppliers')) {
         foreach ($request->suppliers as $supplierId => $supplierData) {
-            if (isset($supplierData['selected'])) {
+            // تأكد أن الاسم في الـ Blade هو suppliers[ID][selected] وقيمته 1
+            if (isset($supplierData['selected']) && $supplierData['selected'] == '1') {
                 $data[$supplierId] = [
                     'cost_price' => $supplierData['cost_price'],
                     'lead_time_days' => $supplierData['lead_time_days'],
                 ];
             }
         }
-    
-
-    $product->suppliers()->sync($data);
     }
-    return redirect()->route('products.index')
-        ->with('success', 'Product updated successfully!');
-}
 
+    // sync ستقوم بإضافة الجديد، تحديث الموجود، وحذف غير الموجود في المصفوفة
+    $product->suppliers()->sync($data);
+
+    return redirect()->route('products.index')->with('success', 'Product updated successfully!');
+}
 
     // DELETE: حذف المنتج (pivot يحذف تلقائيًا)
     public function destroy(Product $product)

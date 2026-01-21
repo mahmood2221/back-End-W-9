@@ -85,41 +85,48 @@
         <input type="number" step="0.01" name="price" value="{{ old('price') }}">
         @error('price') <div class="error">{{ $message }}</div> @enderror
 
-        <label>Category</label>
-        <select name="category_id">
-            <option value="">-- Select Category --</option>
-            @foreach($categories as $category)
-                <option value="{{ $category->id }}"
-                    {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                    {{ $category->name }}
-                </option>
-            @endforeach
-        </select>
-        @error('category_id') <div class="error">{{ $message }}</div> @enderror
+       <label>Category</label>
+<select name="category_id">
+    <option value="">-- Select Category --</option>
+    @foreach($categories as $category)
+        <option value="{{ $category->id }}"
+            {{ old('category_id') == $category->id ? 'selected' : '' }}>
+            {{ $category->name }}
+        </option>
+    @endforeach
+</select>
+@error('category_id') <div class="error">{{ $message }}</div> @enderror
 
-        <hr style="margin:20px 0">
+<hr style="margin:20px 0">
 
 <h3>Suppliers</h3>
 
 @foreach($suppliers as $supplier)
+    @php
+        // في صفحة الإضافة (Create) نحتاج فقط للتحقق من القيم القديمة في حال وجود خطأ Validation
+        $isSelected = old("suppliers.{$supplier->id}.selected");
+        $costPrice = old("suppliers.{$supplier->id}.cost_price");
+        $leadTime = old("suppliers.{$supplier->id}.lead_time_days");
+    @endphp
+
     <div style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
         <label>
             <input type="checkbox"
                    name="suppliers[{{ $supplier->id }}][selected]"
                    value="1"
-                   {{ old("suppliers.$supplier->id.selected") ? 'checked' : '' }}>
+                   {{ $isSelected ? 'checked' : '' }}>
             {{ $supplier->name }}
         </label>
 
         <input type="number" step="0.01"
                name="suppliers[{{ $supplier->id }}][cost_price]"
                placeholder="Cost Price"
-               value="{{ old("suppliers.$supplier->id.cost_price") }}">
+               value="{{ $costPrice }}">
 
         <input type="number"
                name="suppliers[{{ $supplier->id }}][lead_time_days]"
                placeholder="Lead Time (days)"
-               value="{{ old("suppliers.$supplier->id.lead_time_days") }}">
+               value="{{ $leadTime }}">
 
         @error("suppliers.$supplier->id.cost_price")
             <div class="error">{{ $message }}</div>
@@ -130,7 +137,6 @@
         @enderror
     </div>
 @endforeach
-
 
         <button type="submit">Save Product</button>
     </form>
