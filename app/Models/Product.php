@@ -9,7 +9,7 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'price', 'category_id'];
+    protected $fillable = ['name', 'price', 'category_id', 'user_id'];
 
     // علاقة المنتج بالفئة
     public function category()
@@ -25,6 +25,10 @@ class Product extends Model
             ->withTimestamps();
 
 
+}
+public function user()
+{
+    return $this->belongsTo(User::class);
 }
 
 }       

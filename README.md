@@ -1,199 +1,160 @@
-# 📘 Task 06: Many-to-Many Relationship (Products ↔ Suppliers)
 
-## 📌 Objective | الهدف
+# 🛡️ Task 07: Authentication & Authorization (Products ↔ Users Ownership)
 
-Enhance the existing **Products & Categories** system by implementing a
+## 🎯 الأهداف (Objective)
 
-**Many-to-Many relationship** between **Products** and **Suppliers** using a  **Pivot Table** .
-
-👉 الهدف من هذه المهمة هو تطبيق علاقة **متعدد إلى متعدد** مع تخزين بيانات إضافية داخل جدول وسيط.
+تطوير نظام إدارة المنتجات والفئات من خلال دمج نظام الهوية والصلاحيات، وربط كل منتج بمستخدم معين (مالك) وتقييد العمليات الحساسة للملاك فقط.
 
 ---
 
-## 🧱 Database Structure | هيكل قاعدة البيانات
+## ✅ المتطلبات التقنية المنجزة مع الأكواد (Implementation)
 
-### 1️⃣ Suppliers Table
+### 1. نظام الهوية (Laravel Breeze)
 
-تم إنشاء جدول `suppliers` ويحتوي على:
+تم تنصيب حزمة **Laravel Breeze** لتوفير ميزات (Register, Login, Logout).
 
-* `id`
-* `name` (unique)
-* `email` (unique)
-* `timestamps`
+* **الأمر المستخدم:** `php artisan breeze:install blade`
 
-📌 تم إضافة **5 موردين** باستخدام Seeder.
+### 2. ملكية المنتج (Database Migration)
 
----
+إضافة حقل `user_id` لربط المنتجات بالمستخدمين.
 
-### 2️⃣ Pivot Table: `product_supplier`
+* **كود الـ Migration:**
 
-هذا الجدول يربط بين المنتجات والموردين.
+**PHP**
 
-الحقول:
+```
+Schema::table('products', function (Blueprint $table) {
+    $table->foreignId('user_id')->constrained()->onDelete('cascade');
+});
+```
 
-* `product_id` → مرتبط بجدول المنتجات
-* `supplier_id` → مرتبط بجدول الموردين
-* `cost_price` → سعر التوريد
-* `lead_time_days` → مدة التوريد بالأيام
-* `timestamps`
+### 3. علاقات Eloquent (Models)
 
-⚠️ تم إضافة:
+تعريف العلاقات في الموديلات لتمكين استدعاء البيانات بسهولة.
 
-* Foreign Keys
-* Cascade On Delete
-* Unique Constraint لمنع التكرار
+* **في الموديل `User.php`:**
 
----
+**PHP**
 
-## 🔗 Eloquent Relationships
-
-### Product Model
-
-<pre class="overflow-visible! px-0!" data-start="1105" data-end="1278"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-php"><span><span>public</span><span></span><span>function</span><span></span><span>suppliers</span><span>(</span><span></span><span>)
-{
-    </span><span>return</span><span></span><span>$this</span><span>-></span><span>belongsToMany</span><span>(</span><span>Supplier</span><span>::</span><span>class</span><span>)
-        -></span><span>withPivot</span><span>([</span><span>'cost_price'</span><span>, </span><span>'lead_time_days'</span><span>])
-        -></span><span>withTimestamps</span><span>();
+```
+public function products() {
+    return $this->hasMany(Product::class);
 }
-</span></span></code></div></div></pre>
+```
 
-### Supplier Model
+* **في الموديل `Product.php`:**
 
-<pre class="overflow-visible! px-0!" data-start="1299" data-end="1470"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-php"><span><span>public</span><span></span><span>function</span><span></span><span>products</span><span>(</span><span></span><span>)
-{
-    </span><span>return</span><span></span><span>$this</span><span>-></span><span>belongsToMany</span><span>(</span><span>Product</span><span>::</span><span>class</span><span>)
-        -></span><span>withPivot</span><span>([</span><span>'cost_price'</span><span>, </span><span>'lead_time_days'</span><span>])
-        -></span><span>withTimestamps</span><span>();
+**PHP**
+
+```
+public function user() {
+    return $this->belongsTo(User::class);
 }
-</span></span></code></div></div></pre>
+```
 
-📌 بهذه الطريقة يمكن لكل منتج أن يكون له أكثر من مورد والعكس صحيح.
+### 4. التخزين التلقائي للمالك (Controller Logic)
 
----
+تحديث دالة `store` لإسناد المنتج للمستخدم الحالي برمجياً دون الحاجة لحقل إدخال.
 
-## 🌱 Seeders | تعبئة البيانات
+* **في الـ `ProductController.php`:**
 
-تم إنشاء Seeders التالية:
+**PHP**
 
-* CategorySeeder
-* ProductSeeder
-* SupplierSeeder
-* ProductSupplierSeeder
+```
+public function store(Request $request) {
+    $validated = $request->validate([...]);
+  
+    // إسناد المالك تلقائياً
+    $request->user()->products()->create($validated);
 
-📌 كل منتج مرتبط بـ **1–3 موردين** مع بيانات Pivot كاملة.
+    return redirect()->route('products.index');
+}
+```
 
----
+### 5. سياسة الصلاحيات (ProductPolicy)
 
-## 📝 Forms (Create / Edit Product)
+إنشاء سياسة لمنع التعديل والحذف لغير المالك.
 
-تم تعديل صفحات:
+* **كود السياسة في `app/Policies/ProductPolicy.php`:**
 
-* `products.create`
-* `products.edit`
+**PHP**
 
-لإضافة قسم **Suppliers**
+```
+public function update(User $user, Product $product) {
+    return $user->id === $product->user_id;
+}
 
-### Structure المعتمد
+public function delete(User $user, Product $product) {
+    return $user->id === $product->user_id;
+}
+```
 
-<pre class="overflow-visible! px-0!" data-start="1882" data-end="2000"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-text"><span><span>suppliers[SUPPLIER_ID][selected]
-suppliers[SUPPLIER_ID][cost_price]
-suppliers[SUPPLIER_ID][lead_time_days]
-</span></span></code></div></div></pre>
+### 6. حماية الواجهة (Blade Views)
 
-✔ هذا الشكل يسهل:
+إظهار أزرار التحكم للمالك فقط وعرض اسم المالك في الجدول.
 
-* التحقق من البيانات (Validation)
-* حفظ العلاقات في Pivot Table
+* **في ملف `index.blade.php`:**
 
----
+**Blade**
 
-## ⚙️ Controller Logic
+```
+<td>{{ $product->user->name }}</td>
 
-### Store
+@can('update', $product)
+    <a href="{{ route('products.edit', $product) }}">Edit</a>
+@endcan
 
-* حفظ المنتج
-* ربط الموردين باستخدام `sync()` مع بيانات Pivot
-
-### Update
-
-* تحديث المنتج
-* تحديث الموردين بدون حذفهم عند عدم التعديل عليهم
-
-📌 تم التعامل مع:
-
-* الإضافة
-* الحذف
-* التحديث
-
----
-
-## ✅ Validation | التحقق من البيانات
-
-تم تطبيق Validation على:
-
-* اختيار مورد واحد على الأقل
-* التأكد من وجود المورد في قاعدة البيانات
-* التحقق من:
-  * cost_price ≥ 0
-  * lead_time_days ≥ 0
+@can('delete', $product)
+    <form action="{{ route('products.destroy', $product) }}" method="POST">
+        @csrf @method('DELETE')
+        <button>Delete</button>
+    </form>
+@endcan
+```
 
 ---
 
-## 👀 Displaying Data | عرض البيانات
+## 🧪 الاختبارات الآلية (Feature Tests)
 
-### Products Index
+تمت إضافة اختبارات لضمان أمن النظام.
 
-* عرض الموردين لكل منتج مع بيانات Pivot
-* عرض عدد الموردين لكل منتج
+* **كود الاختبار في `tests/Feature/ProductAccessTest.php`:**
 
-مثال:
+**PHP**
 
-<pre class="overflow-visible! px-0!" data-start="2643" data-end="2690"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre!"><span><span>Supplier</span><span></span><span>A</span><span> (</span><span>cost</span><span>: </span><span>120.50</span><span>, </span><span>lead</span><span>: </span><span>7</span><span> days)
-</span></span></code></div></div></pre>
+```
+public function test_user_cannot_edit_others_product() {
+    $user1 = User::factory()->create();
+    $user2 = User::factory()->create();
+    $product = Product::factory()->create(['user_id' => $user1->id]);
 
----
+    // مستخدم 2 يحاول الدخول لمنتج مستخدم 1
+    $response = $this->actingAs($user2)->get("/products/{$product->id}/edit");
 
-## 🚀 Bonus: Eager Loading
-
-لتجنب مشكلة N+1 Query:
-
-<pre class="overflow-visible! px-0!" data-start="2748" data-end="2853"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-php"><span><span>$products</span><span> = </span><span>Product</span><span>::</span><span>with</span><span>([</span><span>'category'</span><span>, </span><span>'suppliers'</span><span>])
-    -></span><span>withCount</span><span>(</span><span>'suppliers'</span><span>)
-    -></span><span>get</span><span>();
-</span></span></code></div></div></pre>
+    $response->assertStatus(403); // يجب أن يظهر 'محظور'
+}
+```
 
 ---
 
-## ▶️ How to Run | طريقة التشغيل
+## 🚀 تعليمات التشغيل
 
-<pre class="overflow-visible! px-0!" data-start="2894" data-end="2973"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre! language-bash"><span><span>composer install
-php artisan migrate:fresh --seed
-php artisan serve
-</span></span></code></div></div></pre>
+1. **تحديث قاعدة البيانات:**
+   **Bash**
 
-ثم زيارة:
+   ```
+   php artisan migrate:fresh --seed
+   ```
+2. **تشغيل الاختبارات:**
+   **Bash**
 
-<pre class="overflow-visible! px-0!" data-start="2985" data-end="3014"><div class="contain-inline-size rounded-2xl corner-superellipse/1.1 relative bg-token-sidebar-surface-primary"><div class="sticky top-[calc(--spacing(9)+var(--header-height))] @w-xl/main:top-9"><div class="absolute end-0 bottom-0 flex h-9 items-center pe-2"><div class="bg-token-bg-elevated-secondary text-token-text-secondary flex items-center gap-4 rounded-sm px-2 font-sans text-xs"></div></div></div><div class="overflow-y-auto p-4" dir="ltr"><code class="whitespace-pre!"><span><span>http:</span><span>//127.0.0.1:8000</span><span>
-</span></span></code></div></div></pre>
+   ```
+   php artisan test --filter=ProductAccessTest
+   ```
 
----
 
-## ✅ Final Result | النتيجة النهائية
+**الدخول للمعاينة:**
 
-✔ تطبيق علاقة Many-to-Many بنجاح
-
-✔ تخزين بيانات Pivot بشكل صحيح
-
-✔ التحكم بالموردين من الواجهة
-
-✔ استخدام Eager Loading
-
-✔ كود منظم ومتوافق مع Laravel Standards
-
-###### 👤 Author
-
-~~MAHMOOD MADY~~
-
-Laravel Training – Task 6
-
-🎯 **Task 06 Completed Successfully**
+* **User:** `test@example.com`
+* **Pass:** `password`

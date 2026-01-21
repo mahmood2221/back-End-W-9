@@ -7,9 +7,15 @@ use App\Models\Category;
 use App\Models\Supplier;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
+
 
 class ProductController extends Controller
 {
+    use AuthorizesRequests;
+    
     // READ: عرض المنتجات مع الفئة والموردين (Eager Loading)
     public function index()
     {
@@ -30,15 +36,19 @@ class ProductController extends Controller
         ]);
     }
 
-    // STORE: حفظ المنتج + الموردين (pivot)
-    public function store(StoreProductRequest $request)
-    {
-        // إنشاء المنتج
-        $product = Product::create($request->validated());
+   public function store(StoreProductRequest $request)
+{
+    // الخطوة 4 من المتطلبات: إسناد المالك تلقائياً عبر المستخدم المسجل حالياً
+    // نستخدم علاقة auth()->user()->products() لضمان وضع الـ user_id الصحيح
 
-        // تجهيز بيانات pivot
-        $data = [];
+   /** @var \App\Models\User $user */
+   $user = $request->user(); 
 
+    // الآن سيختفي الخطأ عن كلمة products()
+    $product = $user->products()->create($request->validated());
+    // تجهيز بيانات pivot (نفس كودك السابق)
+    $data = [];
+    if ($request->has('suppliers')) {
         foreach ($request->suppliers as $supplierId => $supplierData) {
             if (isset($supplierData['selected'])) {
                 $data[$supplierId] = [
@@ -47,17 +57,20 @@ class ProductController extends Controller
                 ];
             }
         }
-
-        // ربط الموردين
-        $product->suppliers()->sync($data);
-
-        return redirect()->route('products.index')
-            ->with('success', 'Product added successfully!');
     }
+
+    // ربط الموردين
+    $product->suppliers()->sync($data);
+
+    return redirect()->route('products.index')
+        ->with('success', 'Product created and linked to your account!');
+}
 
     // EDIT: عرض فورم التعديل
     public function edit(Product $product)
     {
+        $this->authorize('update', $product);
+
         $product->load('suppliers');
 
         return view('products.edit', [
@@ -70,6 +83,8 @@ class ProductController extends Controller
     // UPDATE: تعديل المنتج + تحديث الموردين
  public function update(UpdateProductRequest $request, Product $product)
 {
+    $this->authorize('update', $product);
+
     $product->update($request->validated());
 
     $data = [];
@@ -95,6 +110,7 @@ class ProductController extends Controller
     // DELETE: حذف المنتج (pivot يحذف تلقائيًا)
     public function destroy(Product $product)
     {
+        $this->authorize('delete', $product);
         $product->delete();
 
         return redirect()->route('products.index')

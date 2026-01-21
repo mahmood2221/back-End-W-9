@@ -106,11 +106,10 @@
             <th>Name</th>
             <th>Price ($)</th>
             <th>Category</th>
+            <th>Owner</th> 
             <th>Suppliers</th>
             <th>Suppliers Count</th>
             <th>Actions</th>
-
-
         </tr>
         </thead>
 
@@ -121,29 +120,33 @@
                 <td>{{ $product->name }}</td>
                 <td>{{ number_format($product->price, 2) }}</td>
                 <td>{{ $product->category->name }}</td>
-                <td class="actions">
-                    <a href="{{ route('products.edit', $product->id) }}">Edit</a>
+                
+                <td>{{ $product->user->name ?? 'No Owner' }}</td>
 
-                    <form action="{{ route('products.destroy', $product->id) }}" method="POST">
-                        @csrf
-                        @method('DELETE')
-                        <button onclick="return confirm('Delete this product?')">Delete</button>
-                    </form>
-                </td>
-                       
                 <td>
-                  @foreach($product->suppliers as $supplier)
-                     {{ $supplier->name }}
-                     (cost: {{ $supplier->pivot->cost_price }},
-                     lead: {{ $supplier->pivot->lead_time_days }} days)
-                      <br>
-                                
-
-                      @endforeach
-                         </td>
+                    @foreach($product->suppliers as $supplier)
+                        {{ $supplier->name }} 
+                        (cost: {{ $supplier->pivot->cost_price }}, 
+                        lead: {{ $supplier->pivot->lead_time_days }} days)
+                        <br>
+                    @endforeach
+                </td>
+                
                 <td>{{ $product->suppliers_count }}</td>
 
+                <td class="actions">
+                    @can('update', $product)
+                        <a href="{{ route('products.edit', $product->id) }}">Edit</a>
+                    @endcan
 
+                    @can('delete', $product)
+                        <form action="{{ route('products.destroy', $product->id) }}" method="POST" style="display:inline;">
+                            @csrf
+                            @method('DELETE')
+                            <button onclick="return confirm('Delete this product?')">Delete</button>
+                        </form>
+                    @endcan
+                </td>
             </tr>
         @endforeach
         </tbody>
