@@ -1,76 +1,39 @@
-# 📦 Inventory Core System - Task 08 Implementation
 
-This repository contains the complete implementation of **Task 08**, transforming the project into a fully functional, protected, and unified Inventory Management System.
+# 📦 Inventory Management System - Week 9 🚀
 
----
+![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white)
 
-## 🛠️ Key Deliverables
+نظام إدارة مخزون متقدم تم بناؤه باستخدام **Laravel**، يركز على إدارة المنتجات وعلاقاتها بالفئات والموردين مع نظام بحث وفلترة ذكي.
 
-### 1. Unified App Shell (Layout)
+## 🛠 التطور البرمجي (Task 09 - Products Pro)
 
-- **Shared Layout:** Centralized architecture using `layouts/app.blade.php` to provide a consistent UI.
-- **Professional Navbar:** Integrated navigation with links to **Dashboard, Products, Categories, and Suppliers**.
-- **Identity Display:** Real-time rendering of the logged-in user's Name/Email.
-- **Active States:** Added logic to highlight the current active page in the navbar (Bonus).
+في هذا الأسبوع، تم تحويل صفحة المنتجات من جدول بسيط إلى لوحة تحكم إدارية احترافية تدعم:
 
-### 2. Intelligent Dashboard Interface
+- **Advanced Search:** بحث نصي ذكي عن المنتجات بالاسم والوصف.
+- **Dynamic Filtering:** تصفية النتائج بناءً على الفئة (Category) والمورد (Supplier) بشكل متزامن.
+- **Smart Sorting:** ترتيب المنتجات حسب السعر (من الأقل للأعلى والعكس)، الاسم، أو تاريخ الإضافة.
+- **Pagination & Persistence:** نظام ترقيم الصفحات مع الحفاظ على مدخلات البحث عند التنقل بين الصفحات باستخدام `withQueryString()`.
+- **UI Enhancements:** واجهة مستخدم محسنة باستخدام Tailwind CSS مع زر إضافة منتج بارز وعمود مخصص للسعر.
 
-- **Auth Protection:** Secured the `/dashboard` route with Laravel's authentication middleware.
-- **Summary Cards:** Three dynamic cards showing the total counts for:
-  - Total Products.
-  - Total Categories.
-  - Total Suppliers.
-- **Recent Activity Table:** Displays the last 5 products added to the system.
-- **Performance Fix (Eager Loading):** Implemented `.with(['category', 'user'])` to eliminate N+1 query issues.
+## 📂 هيكل المشروع (Database Schema)
 
-### 3. Flash Feedback System
+- **Products:** (id, name, price, category_id, user_id).
+- **Categories:** (id, name).
+- **Suppliers:** (id, name, email).
+- **Pivot Table:** (product_supplier) لربط المنتجات بالموردين (Many-to-Many).
 
-- **Operation Alerts:** Global success/error messages triggered after every Create, Update, or Delete action.
-- **Global Rendering:** Alert messages are handled at the layout level for system-wide availability.
+## 🚀 طريقة التشغيل
 
-### 4. Robust Validation
+بعد تحميل المشروع، نفذ الأوامر التالية:
 
-- **Field-Level Feedback:** Integrated `@error` directives within forms to show validation errors clearly under each input.
-- **Error Summary:** Added a general error block at the top of forms for improved accessibility.
-
----
-
-## 🏗️ Technical Implementation Details
-
-| Feature           | Method used                         | Status       |
-| :---------------- | :---------------------------------- | :----------- |
-| Layout Pattern    | Blade Slots / Components            | ✅ Completed |
-| Data Optimization | Eloquent Eager Loading              | ✅ Completed |
-| Session Handling  | Flash Messages (Redirect with data) | ✅ Completed |
-| Route Security    | Auth Middleware Grouping            | ✅ Completed |
-
----
-
-## 🚀 Getting Started
-
-1. **Clone the project:**
-   git clone `<repository-url>`
+```bash
+composer install
+npm install && npm run dev
+php artisan migrate --seed
+php artisan serve
+```
 
 
-2. **Environment & Keys:**
-   **Bash**
-
-   ```
-   composer install && cp .env.example .env && php artisan key:generate
-   ```
-3. **Database Setup:**
-   **Bash**
-
-   ```
-   php artisan migrate --seed
-   ```
-4. **Launch:**
-   **Bash**
-
-   ```
-   php artisan serve
-   ```
-
----
-
-**Developed by:** [mahmoud]
+![1769268737217](image/README/1769268737217.png)
