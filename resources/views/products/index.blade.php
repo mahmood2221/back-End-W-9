@@ -1,157 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Products</title>
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Products Management') }}
+        </h2>
+    </x-slot>
 
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f6f8;
-            padding: 40px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: auto;
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,.1);
-        }
-
-        h1 {
-            margin-bottom: 20px;
-        }
-
-        .add-btn {
-            display: inline-block;
-            margin-bottom: 15px;
-            padding: 8px 14px;
-            background: #2563eb;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-
-        .add-btn:hover {
-            background: #1e40af;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead {
-            background: #2563eb;
-            color: white;
-        }
-
-        th, td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-
-        tbody tr:nth-child(even) {
-            background: #f9fafb;
-        }
-
-        .actions a {
-            margin-right: 6px;
-            text-decoration: none;
-            color: #2563eb;
-            font-weight: bold;
-        }
-
-        .actions form {
-            display: inline;
-        }
-
-        .actions button {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .actions button:hover {
-            background: #b91c1c;
-        }
-
-        .success {
-            color: green;
-            margin-bottom: 15px;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h1>Products</h1>
-
-    <a href="{{ route('products.create') }}" class="add-btn">+ Add New Product</a>
-
-    @if(session('success'))
-        <p class="success">{{ session('success') }}</p>
-    @endif
-
-    <table>
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Price ($)</th>
-            <th>Category</th>
-            <th>Owner</th> 
-            <th>Suppliers</th>
-            <th>Suppliers Count</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-
-        <tbody>
-        @foreach($products as $product)
-            <tr>
-                <td>{{ $product->id }}</td>
-                <td>{{ $product->name }}</td>
-                <td>{{ number_format($product->price, 2) }}</td>
-                <td>{{ $product->category->name }}</td>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
                 
-                <td>{{ $product->user->name ?? 'No Owner' }}</td>
+                <div class="mb-4">
+                    <a href="{{ route('products.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
+                        + Add New Product
+                    </a>
+                </div>
 
-                <td>
-                    @foreach($product->suppliers as $supplier)
-                        {{ $supplier->name }} 
-                        (cost: {{ $supplier->pivot->cost_price }}, 
-                        lead: {{ $supplier->pivot->lead_time_days }} days)
-                        <br>
-                    @endforeach
-                </td>
-                
-                <td>{{ $product->suppliers_count }}</td>
+                <table class="min-w-full divide-y divide-gray-200 border">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Owner</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @foreach($products as $product)
+                        <tr>
+                            <td class="px-6 py-4">{{ $product->name }}</td>
+                            <td class="px-6 py-4">{{ $product->category->name }}</td>
+                            <td class="px-6 py-4">{{ $product->user->name ?? 'No Owner' }}</td>
+                            <td class="px-6 py-4">
+                                @can('update', $product)
+                                    <a href="{{ route('products.edit', $product->id) }}" class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
+                                @endcan
 
-                <td class="actions">
-                    @can('update', $product)
-                        <a href="{{ route('products.edit', $product->id) }}">Edit</a>
-                    @endcan
-
-                    @can('delete', $product)
-                        <form action="{{ route('products.destroy', $product->id) }}" method="POST" style="display:inline;">
-                            @csrf
-                            @method('DELETE')
-                            <button onclick="return confirm('Delete this product?')">Delete</button>
-                        </form>
-                    @endcan
-                </td>
-            </tr>
-        @endforeach
-        </tbody>
-    </table>
-</div>
-
-</body>
-</html>
+                                @can('delete', $product)
+                                    <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure?')">Delete</button>
+                                    </form>
+                                @endcan
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</x-app-layout>
