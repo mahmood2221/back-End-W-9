@@ -10,110 +10,127 @@ use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
-
-
 class ProductController extends Controller
 {
     use AuthorizesRequests;
-    
-    // READ: عرض المنتجات مع الفئة والموردين (Eager Loading)
-    public function index()
-    {
-        $products = Product::with(['category', 'suppliers'])
-            ->withCount('suppliers')
-            ->get();
 
-        return view('products.index', compact('products'));
+    // 1. عرض قائمة المنتجات مع البحث والفلترة (Task 09)
+    public function index(Request $request)
+    {
+        $query = Product::with(['category', 'suppliers', 'user']);
+
+        // البحث النصي
+       if ($request->filled('search')) {
+    $search = $request->search;
+    $query->where(function ($q) use ($search) {
+        $q->where('name', 'like', "%$search%"); // نبحث في الاسم فقط
+    });
+}
+
+        // فلترة الفئات
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        // فلترة الموردين
+        if ($request->filled('supplier_id')) {
+            $query->whereHas('suppliers', function ($q) use ($request) {
+                $q->where('suppliers.id', $request->supplier_id);
+            });
+        }
+
+        // الترتيب
+        $sortField = $request->get('sort', 'created_at');
+        $sortDirection = $request->get('direction', 'desc');
+        $allowedFields = ['name', 'price', 'created_at'];
+
+        if (in_array($sortField, $allowedFields)) {
+            $query->orderBy($sortField, $sortDirection);
+        }
+
+        // الترقيم مع الحفاظ على قيم البحث في الرابط
+        $products = $query->paginate(10)->withQueryString();
+
+        return view('products.index', [
+            'products' => $products,
+            'categories' => Category::all(),
+            'suppliers' => Supplier::all(),
+        ]);
     }
 
-    // CREATE: عرض فورم الإضافة
+    // 2. الدالة التي كانت ناقصة وتسببت في الخطأ (عرض صفحة الإضافة)
     public function create()
     {
         return view('products.create', [
             'categories' => Category::all(),
-            'suppliers'  => Supplier::all(),
-            
+            'suppliers' => Supplier::all(),
         ]);
     }
 
-   public function store(StoreProductRequest $request)
-{
-    // الخطوة 4 من المتطلبات: إسناد المالك تلقائياً عبر المستخدم المسجل حالياً
-    // نستخدم علاقة auth()->user()->products() لضمان وضع الـ user_id الصحيح
+    // 3. حفظ المنتج الجديد
+    public function store(StoreProductRequest $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        $product = $user->products()->create($request->validated());
 
-   /** @var \App\Models\User $user */
-   $user = $request->user(); 
-
-    // الآن سيختفي الخطأ عن كلمة products()
-    $product = $user->products()->create($request->validated());
-    // تجهيز بيانات pivot (نفس كودك السابق)
-    $data = [];
-    if ($request->has('suppliers')) {
-        foreach ($request->suppliers as $supplierId => $supplierData) {
-            if (isset($supplierData['selected'])) {
-                $data[$supplierId] = [
-                    'cost_price' => $supplierData['cost_price'],
-                    'lead_time_days' => $supplierData['lead_time_days'],
-                ];
+        $data = [];
+        if ($request->has('suppliers')) {
+            foreach ($request->suppliers as $supplierId => $supplierData) {
+                if (isset($supplierData['selected'])) {
+                    $data[$supplierId] = [
+                        'cost_price' => $supplierData['cost_price'],
+                        'lead_time_days' => $supplierData['lead_time_days'],
+                    ];
+                }
             }
         }
+        $product->suppliers()->sync($data);
+
+        return redirect()->route('products.index')->with('success', 'Product created successfully!');
     }
 
-    // ربط الموردين
-    $product->suppliers()->sync($data);
-
-    return redirect()->route('products.index')
-        ->with('success', 'Product created and linked to your account!');
-}
-
-    // EDIT: عرض فورم التعديل
+    // 4. عرض صفحة التعديل
     public function edit(Product $product)
     {
         $this->authorize('update', $product);
-
         $product->load('suppliers');
 
         return view('products.edit', [
-            'product'    => $product,
+            'product' => $product,
             'categories' => Category::all(),
-            'suppliers'  => Supplier::all(),
+            'suppliers' => Supplier::all(),
         ]);
     }
 
-    // UPDATE: تعديل المنتج + تحديث الموردين
- public function update(UpdateProductRequest $request, Product $product)
-{
-    $this->authorize('update', $product);
+    // 5. تحديث المنتج
+    public function update(UpdateProductRequest $request, Product $product)
+    {
+        $this->authorize('update', $product);
+        $product->update($request->validated());
 
-    $product->update($request->validated());
-
-    $data = [];
-    // نتحقق من وجود المصفوفة، وإذا لم توجد نرسل مصفوفة فارغة لـ sync لمسح الموردين القدامى
-    if ($request->has('suppliers')) {
-        foreach ($request->suppliers as $supplierId => $supplierData) {
-            // تأكد أن الاسم في الـ Blade هو suppliers[ID][selected] وقيمته 1
-            if (isset($supplierData['selected']) && $supplierData['selected'] == '1') {
-                $data[$supplierId] = [
-                    'cost_price' => $supplierData['cost_price'],
-                    'lead_time_days' => $supplierData['lead_time_days'],
-                ];
+        $data = [];
+        if ($request->has('suppliers')) {
+            foreach ($request->suppliers as $supplierId => $supplierData) {
+                if (isset($supplierData['selected']) && $supplierData['selected'] == '1') {
+                    $data[$supplierId] = [
+                        'cost_price' => $supplierData['cost_price'],
+                        'lead_time_days' => $supplierData['lead_time_days'],
+                    ];
+                }
             }
         }
+        $product->suppliers()->sync($data);
+
+        return redirect()->route('products.index')->with('success', 'Product updated successfully!');
     }
 
-    // sync ستقوم بإضافة الجديد، تحديث الموجود، وحذف غير الموجود في المصفوفة
-    $product->suppliers()->sync($data);
-
-    return redirect()->route('products.index')->with('success', 'Product updated successfully!');
-}
-
-    // DELETE: حذف المنتج (pivot يحذف تلقائيًا)
+    // 6. حذف المنتج
     public function destroy(Product $product)
     {
         $this->authorize('delete', $product);
         $product->delete();
 
-        return redirect()->route('products.index')
-            ->with('success', 'Product deleted successfully!');
+        return redirect()->route('products.index')->with('success', 'Product deleted successfully!');
     }
 }

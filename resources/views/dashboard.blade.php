@@ -8,6 +8,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
+            {{-- الإحصائيات العلويّة --}}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-blue-500">
                     <div class="text-sm font-medium text-gray-500 truncate">Total Products</div>
@@ -25,6 +26,7 @@
                 </div>
             </div>
 
+            {{-- جدول أحدث المنتجات --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <h3 class="text-lg font-bold mb-4">Latest 5 Products</h3>
@@ -34,6 +36,10 @@
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product Name</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                                    
+                                    {{-- إضافة ترويسة السعر هنا --}}
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                                    
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Owner</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created At</th>
                                 </tr>
@@ -42,13 +48,20 @@
                                 @forelse($latestProducts as $product)
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">{{ $product->name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $product->category->name }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $product->category->name }}</td>
+                                        
+                                      {{-- عرض السعر بلون أخضر وبخط سميك --}}
+<td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
+    ${{ number_format($product->price, 2) }}
+</td>
+
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-semibold">{{ $product->user->name }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->created_at->diffForHumans() }}</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">No products found.</td>
+                                        {{-- تم زيادة الـ colspan لـ 5 ليتناسب مع العمود الجديد --}}
+                                        <td colspan="5" class="px-6 py-4 text-center text-gray-500 italic">No products found.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
