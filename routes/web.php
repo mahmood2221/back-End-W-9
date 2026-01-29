@@ -16,10 +16,19 @@ Route::get('/', function () {
 // جرب هذا الكود مؤقتاً للتأكد من الربط
 Route::get('/dashboard', function () {
     return view('dashboard', [
-        // جلب جميع المنتجات في النظام مع علاقاتها لضمان السرعة
-        'latestProducts' => \App\Models\Product::with(['user', 'suppliers'])->latest()->get(),
+        // 1. الإحصائيات (Counts)
+        'totalProducts'   => Product::count(),
+        'totalCategories' => Category::count(),
+        'totalSuppliers'  => Supplier::count(),
+
+        // 2. آخر 5 منتجات مع الـ Eager Loading لكل العلاقات المطلوبة
+        'latestProducts'  => Product::with(['user', 'category', 'suppliers'])
+                                    ->latest()
+                                    ->take(5) // جلب آخر 5 فقط
+                                    ->get(),
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

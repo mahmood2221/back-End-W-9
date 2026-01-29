@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // تأكد من وجود هذا السطر
-
+use Illuminate\Support\Facades\Auth;
 class SupplierController extends Controller
 {
     use AuthorizesRequests; // لإتاحة استخدام $this->authorize()
@@ -29,8 +29,9 @@ $suppliers = Supplier::with('user')->get();
         'email' => 'required|email|unique:suppliers,email',
         'phone' => 'nullable|string',
     ]);
-
-    $validated['user_id'] = auth()->id();
+    /** @var \App\Models\User $user */
+    
+    $validated['user_id'] = Auth::id();
 
     Supplier::create($validated);
 
