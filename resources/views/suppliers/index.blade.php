@@ -33,15 +33,25 @@
                                 <td class="px-6 py-4 text-sm">{{ $supplier->name }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">{{ $supplier->email }}</td>
                                 <td class="px-6 py-4 text-sm">
-                                    <a href="{{ route('suppliers.edit', $supplier->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3 font-bold">Edit</a>
                                     
-                                    <form action="{{ route('suppliers.destroy', $supplier->id) }}" method="POST" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900 font-bold" onclick="return confirm('Are you sure?')">
-                                            Delete
-                                        </button>
-                                    </form>
+                                    {{-- التحقق من صلاحية التعديل --}}
+                                    @can('update', $supplier)
+                                        <a href="{{ route('suppliers.edit', $supplier->id) }}" class="text-indigo-600 hover:text-indigo-900 mr-3 font-bold">Edit</a>
+                                    @else
+                                        <span class="text-gray-400 mr-3 italic text-xs">Read Only</span>
+                                    @endcan
+                                    
+                                    {{-- التحقق من صلاحية الحذف --}}
+                                    @can('delete', $supplier)
+                                        <form action="{{ route('suppliers.destroy', $supplier->id) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900 font-bold" onclick="return confirm('Are you sure?')">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    @endcan
+
                                 </td>
                             </tr>
                             @empty

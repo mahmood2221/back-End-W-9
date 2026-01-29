@@ -23,8 +23,7 @@
                         <tr>
                             <td class="px-6 py-4">{{ $category->id }}</td>
                             <td class="px-6 py-4">{{ $category->name }}</td>
-                            <td class="px-6 py-4">{{ $category->created_at->format('Y-m-d') }}</td>
-                        </tr>
+                            <td class="px-6 py-4">{{ $category->created_at?->format('Y-m-d') ?: 'N/A' }}</td>                        </tr>
                         @endforeach
                     </tbody>
                 </table>

@@ -50,4 +50,9 @@ public function products()
 {
     return $this->hasMany(Product::class);
 }
+// داخل كلاس User
+public function suppliers()
+{
+    return $this->hasMany(Supplier::class);
+}
 }

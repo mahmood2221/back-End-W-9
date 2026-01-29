@@ -14,6 +14,26 @@
         .error { color: red; font-size: 14px; margin-top: 4px; }
         .save-btn { margin-top: 20px; width: 100%; background: #2563eb; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; }
         .save-btn:hover { background: #1e40af; }
+
+        .save-btn {
+    display: block;        /* ضروري لكي يعمل الـ margin auto */
+    width: 180px;          /* تحديد عرض صغير وثابت للزر */
+    margin: 30px auto;     /* القيمة الأولى (30px) للمسافة العلوية، و auto لتوسيطه يميناً ويساراً */
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.3s ease;
+}
+
+.save-btn:hover {
+    background: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); /* لمسة جمالية عند التمرير */
+}
     </style>
 
     <div class="py-6">
@@ -54,29 +74,29 @@
                 </select>
                 @error('category_id') <div class="error">{{ $message }}</div> @enderror
 
-                <hr style="margin:20px 0">
-                <h3>Suppliers</h3>
+  <hr style="margin:20px 0">
+<h3 class="my-label">Suppliers Details</h3>
 
-                @foreach($suppliers as $supplier)
-                    @php
-                        $isSelected = old("suppliers.{$supplier->id}.selected");
-                        $costPrice = old("suppliers.{$supplier->id}.cost_price");
-                        $leadTime = old("suppliers.{$supplier->id}.lead_time_days");
-                    @endphp
+@foreach($suppliers as $supplier)
+    <div style="margin-bottom:15px; border:1px solid #eee; padding:15px; border-radius:8px; background:#f9f9f9;">
+        <label style="display:flex; align-items:center; font-weight:bold; margin-bottom:10px;">
+            <input type="checkbox" name="suppliers[{{ $supplier->id }}][selected]" value="1" style="margin-right:10px;">
+            {{ $supplier->name }}
+        </label>
 
-                    <div style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
-                        <label>
-                            <input type="checkbox" name="suppliers[{{ $supplier->id }}][selected]" value="1" {{ $isSelected ? 'checked' : '' }}>
-                            {{ $supplier->name }}
-                        </label>
-
-                        <input type="number" step="0.01" class="my-input" name="suppliers[{{ $supplier->id }}][cost_price]" placeholder="Cost Price" value="{{ $costPrice }}">
-                        <input type="number" class="my-input" name="suppliers[{{ $supplier->id }}][lead_time_days]" placeholder="Lead Time (days)" value="{{ $leadTime }}">
-
-                        @error("suppliers.$supplier->id.cost_price") <div class="error">{{ $message }}</div> @enderror
-                        @error("suppliers.$supplier->id.lead_time_days") <div class="error">{{ $message }}</div> @enderror
-                    </div>
-                @endforeach
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div>
+                <label style="font-size:12px; color:#666;">Cost Price ($)</label>
+                <input type="number" step="0.01" name="suppliers[{{ $supplier->id }}][cost_price]" class="my-input" placeholder="0.00">
+            </div>
+            <div>
+                <label style="font-size:12px; color:#666;">Lead Time (Days)</label>
+                <input type="number" name="suppliers[{{ $supplier->id }}][lead_time_days]" class="my-input" placeholder="e.g. 5">
+            </div>
+        </div>
+    </div>
+@endforeach
+</div>
 
                 <button type="submit" class="save-btn">Save Product</button>
             </form>

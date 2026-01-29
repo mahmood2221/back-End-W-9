@@ -10,29 +10,47 @@ use Tests\TestCase;
 
 class ProductAccessTest extends TestCase
 {
-    use RefreshDatabase; // لتنظيف قاعدة بيانات الاختبار بعد كل فحص
+    use RefreshDatabase;
 
-   public function test_user_cannot_edit_others_product()
-{
-    // 1. إنشاء مستخدمين
-    $user1 = User::factory()->create();
-    $user2 = User::factory()->create();
-    
-    // 2. إنشاء فئة يدوياً بدلاً من استخدام Factory
-    $category = \App\Models\Category::create(['name' => 'Electronics']);
+    // حالة 1: الضيف لا يمكنه الدخول
+    public function test_guest_cannot_access_protected_routes()
+    {
+        $response = $this->get(route('products.create'));
+        $response->assertRedirect('/login');
+    }
 
-    // 3. إنشاء منتج مملوك للمستخدم الأول
-    $product = Product::create([
-        'name' => 'User 1 Product',
-        'price' => 100,
-        'category_id' => $category->id,
-        'user_id' => $user1->id
-    ]);
+    // حالة 2: المستخدم لا يمكنه تعديل منتج غيره (الكود الخاص بك)
+    public function test_user_cannot_edit_others_product()
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $category = Category::create(['name' => 'Electronics']);
 
-    // 4. محاولة الدخول بصفة المستخدم الثاني لتعديل منتج المستخدم الأول
-    $response = $this->actingAs($user2)->get(route('products.edit', $product));
+        $product = Product::create([
+            'name' => 'User 1 Product',
+            'price' => 100,
+            'category_id' => $category->id,
+            'user_id' => $user1->id
+        ]);
 
-    // 5. التأكد أن النظام منعه
-    $response->assertStatus(403);
-}
+        $response = $this->actingAs($user2)->get(route('products.edit', $product));
+        $response->assertStatus(403);
+    }
+
+    // حالة 3: المالك يمكنه تعديل منتجه الخاص
+    public function test_owner_can_edit_their_own_product()
+    {
+        $user = User::factory()->create();
+        $category = Category::create(['name' => 'Home']);
+
+        $product = Product::create([
+            'name' => 'My Product',
+            'price' => 50,
+            'category_id' => $category->id,
+            'user_id' => $user->id
+        ]);
+
+        $response = $this->actingAs($user)->get(route('products.edit', $product));
+        $response->assertStatus(200);
+    }
 }

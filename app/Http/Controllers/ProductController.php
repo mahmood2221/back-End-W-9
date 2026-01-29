@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
-use App\Models\Supplier;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Http\Request;
@@ -14,121 +13,97 @@ class ProductController extends Controller
 {
     use AuthorizesRequests;
 
-    // 1. عرض قائمة المنتجات مع البحث والفلترة (Task 09)
-    public function index(Request $request)
+    // عرض القائمة فقط بدون فلترة (Task 07)
+    public function index()
     {
-        $query = Product::with(['category', 'suppliers', 'user']);
+        // جلب المنتجات مع الفئة والمالك فقط لتقليل الضغط على القاعدة
+        $products = Product::with(['category', 'user'])->latest()->paginate(10);
 
-        // البحث النصي
-       if ($request->filled('search')) {
-    $search = $request->search;
-    $query->where(function ($q) use ($search) {
-        $q->where('name', 'like', "%$search%"); // نبحث في الاسم فقط
-    });
+        return view('products.index', compact('products'));
+    }
+
+    // صفحة الإضافة
+    public function create()
+{
+    return view('products.create', [
+        'categories' => \App\Models\Category::all(),
+        'suppliers'  => \App\Models\Supplier::all(), // هذا السطر هو الذي سيجلب الموردين الأربعة
+    ]);
 }
 
-        // فلترة الفئات
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
+    // حفظ المنتج مع الربط التلقائي بالمستخدم
+  public function store(Request $request) 
+{
+    // 1. إنشاء المنتج وربطه بالمستخدم
+    $product = $request->user()->products()->create($request->all());
 
-        // فلترة الموردين
-        if ($request->filled('supplier_id')) {
-            $query->whereHas('suppliers', function ($q) use ($request) {
-                $q->where('suppliers.id', $request->supplier_id);
-            });
-        }
-
-        // الترتيب
-        $sortField = $request->get('sort', 'created_at');
-        $sortDirection = $request->get('direction', 'desc');
-        $allowedFields = ['name', 'price', 'created_at'];
-
-        if (in_array($sortField, $allowedFields)) {
-            $query->orderBy($sortField, $sortDirection);
-        }
-
-        // الترقيم مع الحفاظ على قيم البحث في الرابط
-        $products = $query->paginate(10)->withQueryString();
-
-        return view('products.index', [
-            'products' => $products,
-            'categories' => Category::all(),
-            'suppliers' => Supplier::all(),
-        ]);
-    }
-
-    // 2. الدالة التي كانت ناقصة وتسببت في الخطأ (عرض صفحة الإضافة)
-    public function create()
-    {
-        return view('products.create', [
-            'categories' => Category::all(),
-            'suppliers' => Supplier::all(),
-        ]);
-    }
-
-    // 3. حفظ المنتج الجديد
-    public function store(StoreProductRequest $request)
-    {
-        /** @var \App\Models\User $user */
-        $user = $request->user();
-        $product = $user->products()->create($request->validated());
-
-        $data = [];
-        if ($request->has('suppliers')) {
-            foreach ($request->suppliers as $supplierId => $supplierData) {
-                if (isset($supplierData['selected'])) {
-                    $data[$supplierId] = [
-                        'cost_price' => $supplierData['cost_price'],
-                        'lead_time_days' => $supplierData['lead_time_days'],
-                    ];
-                }
+    // 2. معالجة بيانات الموردين الإضافية (Pivot Data)
+    if ($request->has('suppliers')) {
+        $attachData = [];
+        foreach ($request->suppliers as $supplierId => $details) {
+            // نحفظ فقط الموردين الذين تم تحديدهم بالـ Checkbox
+            if (isset($details['selected'])) {
+                $attachData[$supplierId] = [
+                    'cost_price' => $details['cost_price'],
+                    'lead_time_days' => $details['lead_time_days'],
+                ];
             }
         }
-        $product->suppliers()->sync($data);
-
-        return redirect()->route('products.index')->with('success', 'Product created successfully!');
+        // ربط البيانات بالجدول الوسيط
+        $product->suppliers()->sync($attachData);
     }
 
-    // 4. عرض صفحة التعديل
-    public function edit(Product $product)
-    {
-        $this->authorize('update', $product);
-        $product->load('suppliers');
+    return redirect()->route('products.index')->with('success', 'Product saved with supplier details!');
+}
 
-        return view('products.edit', [
-            'product' => $product,
-            'categories' => Category::all(),
-            'suppliers' => Supplier::all(),
-        ]);
-    }
+    // صفحة التعديل مع حماية الـ Policy
+   public function edit(Product $product)
+{
+    $this->authorize('update', $product);
 
-    // 5. تحديث المنتج
-    public function update(UpdateProductRequest $request, Product $product)
-    {
-        $this->authorize('update', $product);
-        $product->update($request->validated());
+    return view('products.edit', [
+        'product'    => $product,
+        'categories' => Category::all(),
+        'suppliers'  => \App\Models\Supplier::all(), // أضف هذا السطر هنا أيضاً
+    ]);
+}
 
-        $data = [];
-        if ($request->has('suppliers')) {
-            foreach ($request->suppliers as $supplierId => $supplierData) {
-                if (isset($supplierData['selected']) && $supplierData['selected'] == '1') {
-                    $data[$supplierId] = [
-                        'cost_price' => $supplierData['cost_price'],
-                        'lead_time_days' => $supplierData['lead_time_days'],
-                    ];
-                }
+    // تحديث المنتج
+   public function update(UpdateProductRequest $request, Product $product)
+{
+    // 1. التأكد من الصلاحية (Policy)
+    $this->authorize('update', $product);
+    
+    // 2. تحديث بيانات المنتج الأساسية (الاسم، السعر، القسم)
+    $product->update($request->validated());
+
+    // 3. تحديث الموردين (علاقة Many-to-Many مع بيانات Pivot)
+    if ($request->has('suppliers')) {
+        $syncData = [];
+        foreach ($request->suppliers as $supplierId => $details) {
+            // نحفظ المورد فقط إذا تم اختياره (Checkboxed)
+            if (isset($details['selected'])) {
+                $syncData[$supplierId] = [
+                    'cost_price' => $details['cost_price'] ?? 0,
+                    'lead_time_days' => $details['lead_time_days'] ?? 0,
+                ];
             }
         }
-        $product->suppliers()->sync($data);
-
-        return redirect()->route('products.index')->with('success', 'Product updated successfully!');
+        // استخدام sync سيقوم بحذف القديم وإضافة الجديد أو تحديث الموجود
+        $product->suppliers()->sync($syncData);
+    } else {
+        // إذا تم إلغاء اختيار جميع الموردين، نقوم بتفريغهم
+        $product->suppliers()->detach();
     }
 
-    // 6. حذف المنتج
+    return redirect()->route('products.index')->with('success', 'Product and suppliers updated successfully!');
+}
+
+    // حذف المنتج
     public function destroy(Product $product)
     {
         $this->authorize('delete', $product);
+        
         $product->delete();
 
         return redirect()->route('products.index')->with('success', 'Product deleted successfully!');

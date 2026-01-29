@@ -67,6 +67,25 @@
             color: #2563eb;
             text-decoration: none;
         }
+        .save-btn {
+    display: block;        /* ضروري لكي يعمل الـ margin auto */
+    width: 180px;          /* تحديد عرض صغير وثابت للزر */
+    margin: 30px auto;     /* القيمة الأولى (30px) للمسافة العلوية، و auto لتوسيطه يميناً ويساراً */
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.3s ease;
+}
+
+.save-btn:hover {
+    background: #1d4ed8;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); /* لمسة جمالية عند التمرير */
+}
     </style>
 </head>
 <body>

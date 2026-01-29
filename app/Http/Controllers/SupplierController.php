@@ -4,79 +4,72 @@ namespace App\Http\Controllers;
 
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests; // تأكد من وجود هذا السطر
 
 class SupplierController extends Controller
 {
-    /**
-     * عرض قائمة الموردين
-     */
+    use AuthorizesRequests; // لإتاحة استخدام $this->authorize()
+
     public function index()
     {
-        $suppliers = Supplier::all();
+$suppliers = Supplier::with('user')->get();
         return view('suppliers.index', compact('suppliers'));
     }
 
-    /**
-     * عرض صفحة إضافة مورد جديد (هذا الجزء هو الذي يحل الخطأ)
-     */
     public function create()
     {
-        // تأكد من وجود ملف resources/views/suppliers/create.blade.php
         return view('suppliers.create');
     }
 
-    /**
-     * حفظ المورد الجديد في قاعدة البيانات
-     */
     public function store(Request $request)
+{
+    $validated = $request->validate([
+        // أضفنا unique:suppliers هنا لمنع التكرار وإظهار رسالة خطأ لطيفة بدل الانهيار
+        'name' => 'required|min:3|unique:suppliers,name', 
+        'email' => 'required|email|unique:suppliers,email',
+        'phone' => 'nullable|string',
+    ]);
+
+    $validated['user_id'] = auth()->id();
+
+    Supplier::create($validated);
+
+    return redirect()->route('suppliers.index')
+        ->with('success', 'Supplier created successfully!');
+}
+
+    public function edit(Supplier $supplier) // استخدم الـ Model Binding هنا أسهل
     {
-        $request->validate([
-            'name' => 'required|min:3',
-            'email' => 'required|email|unique:suppliers,email',
-            'phone' => 'nullable|string',
-        ]);
-
-        Supplier::create($request->all());
-
-        return redirect()->route('suppliers.index')
-            ->with('success', 'Supplier created successfully!');
-    }
-
-    /**
-     * حذف المورد
-     */
-    public function destroy(string $id)
-    {
-        $supplier = Supplier::findOrFail($id);
-        $supplier->delete();
-
-        return redirect()->route('suppliers.index')
-            ->with('success', 'Supplier deleted successfully!');
-    }
-
-    /**
-     * عرض صفحة التعديل
-     */
-    public function edit(string $id)
-    {
-        $supplier = Supplier::findOrFail($id);
+        // حماية: لا يمكن الدخول لصفحة التعديل إلا للمالك
+        $this->authorize('update', $supplier); 
+        
         return view('suppliers.edit', compact('supplier'));
     }
 
-    /**
-     * تحديث بيانات المورد
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Supplier $supplier)
     {
+        // حماية: التأكد من الصلاحية قبل التحديث
+        $this->authorize('update', $supplier);
+
         $request->validate([
             'name' => 'required|min:3',
-            'email' => 'required|email|unique:suppliers,email,' . $id,
+            'email' => 'required|email|unique:suppliers,email,' . $supplier->id,
         ]);
 
-        $supplier = Supplier::findOrFail($id);
         $supplier->update($request->all());
 
         return redirect()->route('suppliers.index')
             ->with('success', 'Supplier updated successfully!');
+    }
+
+    public function destroy(Supplier $supplier)
+    {
+        // حماية: الحذف للمالك فقط
+        $this->authorize('delete', $supplier);
+
+        $supplier->delete();
+
+        return redirect()->route('suppliers.index')
+            ->with('success', 'Supplier deleted successfully!');
     }
 }

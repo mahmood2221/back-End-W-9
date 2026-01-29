@@ -2,24 +2,24 @@
 
 namespace App\Policies;
 
-use App\Models\Product;
+use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
-class ProductPolicy
+class SupplierPolicy
 {
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return true;
+        return false;
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Product $product): bool
+    public function view(User $user, Supplier $supplier): bool
     {
         return false;
     }
@@ -29,30 +29,30 @@ class ProductPolicy
      */
     public function create(User $user): bool
     {
-        return true;
+        return false;
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Product $product): bool
+    public function update(User $user, Supplier $supplier): bool
     {
-        // لا يسمح بالتعديل إلا لصاحب المنتج
-    return $user->id === $product->user_id;
-    }
+// لا يمكن التعديل إلا إذا كان الـ user_id للمورد هو نفسه ID المستخدم الحالي
+    return $user->id === $supplier->user_id;    }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Product $product): bool
+    public function delete(User $user, Supplier $supplier): bool
     {
-        return $user->id === $product->user_id;
-    }
+        // لا يمكن الحذف إلا للمالك فقط
+    return $user->id === $supplier->user_id;
 
+    }
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Product $product): bool
+    public function restore(User $user, Supplier $supplier): bool
     {
         return false;
     }
@@ -60,7 +60,7 @@ class ProductPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Product $product): bool
+    public function forceDelete(User $user, Supplier $supplier): bool
     {
         return false;
     }

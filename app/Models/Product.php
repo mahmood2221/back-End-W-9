@@ -18,11 +18,8 @@ class Product extends Model
     }
 
     // علاقة المنتج بالموردين
-    public function suppliers()
-    {
-        return $this->belongsToMany(Supplier::class)
-            ->withPivot(['cost_price', 'lead_time_days'])
-            ->withTimestamps();
+   public function suppliers() {
+    return $this->belongsToMany(Supplier::class)->withPivot('cost_price', 'lead_time_days');
 
 
 }

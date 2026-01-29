@@ -1,72 +1,66 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Admin Dashboard') }}
+            {{ __('Dashboard Overview') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             
-            {{-- الإحصائيات العلويّة --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-blue-500">
-                    <div class="text-sm font-medium text-gray-500 truncate">Total Products</div>
-                    <div class="mt-1 text-3xl font-semibold text-gray-900">{{ $totalProducts }}</div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-green-500">
-                    <div class="text-sm font-medium text-gray-500 truncate">Total Categories</div>
-                    <div class="mt-1 text-3xl font-semibold text-gray-900">{{ $totalCategories }}</div>
-                </div>
-
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-yellow-500">
-                    <div class="text-sm font-medium text-gray-500 truncate">Total Suppliers</div>
-                    <div class="mt-1 text-3xl font-semibold text-gray-900">{{ $totalSuppliers }}</div>
-                </div>
+            <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 25px;">
+                <h3 style="margin-top: 0;">Welcome, {{ auth()->user()->name }}!</h3>
+                <p style="color: #555;">You can now manage your products and link them with suppliers easily.</p>
             </div>
 
-            {{-- جدول أحدث المنتجات --}}
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-bold mb-4">Latest 5 Products</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product Name</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                                    
-                                    {{-- إضافة ترويسة السعر هنا --}}
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-                                    
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Owner</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created At</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse($latestProducts as $product)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $product->name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $product->category->name }}</td>
-                                        
-                                      {{-- عرض السعر بلون أخضر وبخط سميك --}}
-<td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
-    ${{ number_format($product->price, 2) }}
-</td>
+            <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+               <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 18px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px;">
+    All System Products
+</h3>
 
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-semibold">{{ $product->user->name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $product->created_at->diffForHumans() }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        {{-- تم زيادة الـ colspan لـ 5 ليتناسب مع العمود الجديد --}}
-                                        <td colspan="5" class="px-6 py-4 text-center text-gray-500 italic">No products found.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+<table style="width: 100%; border-collapse: collapse; text-align: left;">
+    <thead>
+        <tr style="background-color: #f9fafb;">
+            <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Product Name</th>
+            <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Owner (Created By)</th>
+            <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Suppliers</th>
+            <th style="padding: 12px; border-bottom: 1px solid #e5e7eb;">Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        @forelse($latestProducts as $product)
+        <tr>
+            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; font-weight: bold;">{{ $product->name }}</td>
+            
+            {{-- هنا سيظهر اسم أي مستخدم قام بإنشاء المنتج --}}
+            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
+                <span style="color: #4b5563; font-style: italic;">
+                    {{ $product->user->name ?? 'Unknown User' }}
+                </span>
+            </td>
+
+            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
+                @foreach($product->suppliers as $supplier)
+                    <span style="display: inline-block; background: #f0fdf4; color: #166534; padding: 2px 8px; border-radius: 12px; font-size: 11px; border: 1px solid #bbf7d0;">
+                        {{ $supplier->name }}
+                    </span>
+                @endforeach
+            </td>
+
+            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${{ $product->price }}</td>
+        </tr>
+        @empty
+        <tr>
+            <td colspan="4" style="padding: 20px; text-align: center; color: #9ca3af;">No products available in the system.</td>
+        </tr>
+        @endforelse
+    </tbody>
+</table>
+
+                <div style="margin-top: 15px;">
+                    <a href="{{ route('products.index') }}" style="color: #3b82f6; text-decoration: none; font-size: 14px; font-weight: bold;">
+                        Go to Product Management →
+                    </a>
                 </div>
             </div>
 
