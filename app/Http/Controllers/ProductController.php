@@ -12,15 +12,45 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 class ProductController extends Controller
 {
     use AuthorizesRequests;
+public function index(Request $request)
+{
+    // 1. نبدأ بإنشاء الاستعلام مع العلاقات لتقليل ضغط قاعدة البيانات (Eager Loading)
+    // أضفنا 'suppliers' هنا لأننا سنحتاجها في الفلترة والعرض
+    $query = Product::with(['category', 'user', 'suppliers']);
 
-    // عرض القائمة فقط بدون فلترة (Task 07)
-    public function index()
-    {
-        // جلب المنتجات مع الفئة والمالك فقط لتقليل الضغط على القاعدة
-        $products = Product::with(['category', 'user'])->latest()->paginate(10);
+    // 2. منطق البحث (Search): بالاسم أو الوصف
+   if ($request->filled('search')) {
+    $query->where('name', 'like', '%' . $request->search . '%');
+}
 
-        return view('products.index', compact('products'));
+    // 3. الفلترة حسب القسم (Category Filter)
+    if ($request->filled('category_id')) {
+        $query->where('category_id', $request->category_id);
     }
+
+    // 4. الفلترة حسب المورد (Supplier Filter) - علاقة Many-to-Many
+    if ($request->filled('supplier_id')) {
+        $query->whereHas('suppliers', function($q) use ($request) {
+            $q->where('suppliers.id', $request->supplier_id);
+        });
+    }
+
+    // 5. الترتيب (Sorting) مع حماية ضد المدخلات غير الصالحة (Whitelist)
+    $allowedSortFields = ['name', 'price', 'created_at'];
+    $sort = in_array($request->sort, $allowedSortFields) ? $request->sort : 'created_at';
+    $direction = ($request->direction === 'asc') ? 'asc' : 'desc';
+
+    $query->orderBy($sort, $direction);
+
+    // 6. الترقيم مع الحفاظ على روابط البحث (Pagination + Query Persistence)
+    $products = $query->paginate(10)->withQueryString();
+
+    // جلب البيانات اللازمة للقوائم المنسدلة في الفلتر
+    $categories = \App\Models\Category::all();
+    $suppliers = \App\Models\Supplier::all();
+
+    return view('products.index', compact('products', 'categories', 'suppliers'));
+}
 
     // صفحة الإضافة
     public function create()
